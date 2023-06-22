@@ -2,3 +2,9 @@ Flask==2.3.2
 SQLAlchemy==2.0.16
 WTForms==3.0.1
 gunicorn==20.1.0
+pip==23.1.2
+Flask-Bootstrap==3.3.7.1
+Flask-SQLAlchemy==3.0.4
+Flask-WTF==1.1.1
+WTForms==3.0.1
+Jinja2==3.1.2
