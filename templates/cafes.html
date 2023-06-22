@@ -1,0 +1,46 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-2 col-md-3 col-sm-4 px-4 py-4 bg-light text-dark">
+            <h2>Filter</h2>
+            <hr class="my-4">
+            {{ wtf.quick_form(filter_form, novalidate=True, button_map={"filter": "primary", "reset": "secondary"}) }}
+            <p class="py-4">{{ all_cafes|length }} results</p>
+
+        </div>
+        <div class="col">
+            <div class="container">
+                {% for cafe in all_cafes: %}
+                <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+                    <div class="col-10 col-sm-8 col-lg-6">
+                        <img src="{{ cafe.img_url }}" class="d-block mx-lg-auto img-fluid" alt="Café image" style="max-height:300px" loading="lazy">
+                    </div>
+                    <div class="col-lg-6">
+                        <h2 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">{{ cafe.name }}</h2>
+                        <p class="lead">{{ cafe.location }} - <a href="{{ cafe.map_url }}" target="_blank">Google Maps</a></p>
+                        <div class="row">
+                            <div class="col">Seats: {{ cafe.seats }}</div>
+                            <div class="col">Coffee price: {{ cafe.coffee_price }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Sockets: {{ cafe.has_sockets }}</div>
+                            <div class="col">Toilet: {{ cafe.has_toilet }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Wifi: {{ cafe.has_wifi }}</div>
+                            <div class="col">Calls: {{ cafe.can_take_calls }}</div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4">
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
