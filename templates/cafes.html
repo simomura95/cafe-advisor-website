@@ -27,12 +27,12 @@
                             <div class="col">Coffee price: {{ cafe.coffee_price }}</div>
                         </div>
                         <div class="row">
-                            <div class="col">Sockets: {{ cafe.has_sockets }}</div>
-                            <div class="col">Toilet: {{ cafe.has_toilet }}</div>
+                            <div class="col">Sockets: {{ '✔️' if cafe.has_sockets else '❌' }}</div>
+                            <div class="col">Toilet: {{ '✔️' if cafe.has_toilet else '❌' }}</div>
                         </div>
                         <div class="row">
-                            <div class="col">Wifi: {{ cafe.has_wifi }}</div>
-                            <div class="col">Calls: {{ cafe.can_take_calls }}</div>
+                            <div class="col">Wifi: {{ '✔️' if cafe.has_wifi else '❌' }}</div>
+                            <div class="col">Calls: {{ '✔️' if cafe.can_take_calls else '❌' }}</div>
                         </div>
                     </div>
                 </div>
