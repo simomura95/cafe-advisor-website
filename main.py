@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, flash, abort
 from flask_bootstrap import Bootstrap
 # from flask_ckeditor import CKEditor
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import func, select
 
 # from werkzeug.security import generate_password_hash, check_password_hash
 # from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
@@ -18,7 +18,7 @@ app.app_context().push()  # per evitare errori dopo nell'esecuzione
 
 # Connect to Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 Bootstrap(app)
 
@@ -64,13 +64,15 @@ def cafe_list():
             conditions.append(Cafe.has_wifi.is_(True))
         if form.calls.data:
             conditions.append(Cafe.can_take_calls.is_(True))
+        # cafes = Cafe.query.filter(*conditions).all()
         cafes = Cafe.query.filter(*conditions).all()
         # with *, conditions are unpacked and correctly evaluated. Without *, error
     else:
         cafes = Cafe.query.all()
-    for cafe in cafes:
-        [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls] = \
-            ['✔️' if elem else '❌' for elem in [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls]]
+    # print(cafes[0].data())
+    # for cafe in cafes:
+    #     [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls] = \
+    #         ['✔️' if elem else '❌' for elem in [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls]]
     return render_template("cafes.html", all_cafes=cafes, filter_form=form)
 
 ## TODO: add and remove cafes + users login? + comment/reviews?
