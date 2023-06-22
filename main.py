@@ -65,14 +65,14 @@ def cafe_list():
         if form.calls.data:
             conditions.append(Cafe.can_take_calls.is_(True))
         # cafes = Cafe.query.filter(*conditions).all()
-        cafes = Cafe.query.filter(*conditions).all()
+        cafes = db.session.execute(db.select(Cafe).where(*conditions)).scalars().all()
         # with *, conditions are unpacked and correctly evaluated. Without *, error
     else:
-        cafes = Cafe.query.all()
-    # print(cafes[0].data())
-    # for cafe in cafes:
-    #     [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls] = \
-    #         ['✔️' if elem else '❌' for elem in [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls]]
+        #cafes = Cafe.query.scalars()
+        cafes = db.session.execute(db.select(Cafe)).scalars().all()
+    for cafe in cafes:
+        [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls] = \
+            ['✔️' if elem else '❌' for elem in [cafe.has_sockets, cafe.has_toilet, cafe.has_wifi, cafe.can_take_calls]]
     return render_template("cafes.html", all_cafes=cafes, filter_form=form)
 
 ## TODO: add and remove cafes + users login? + comment/reviews?
