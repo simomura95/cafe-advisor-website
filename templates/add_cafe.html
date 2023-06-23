@@ -1,0 +1,18 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <br><h4 class="flashes text-danger">{{ message }}</h4>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+</div>
+
+{% endblock %}

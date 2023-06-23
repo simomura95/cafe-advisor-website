@@ -18,7 +18,7 @@ app.app_context().push()  # per evitare errori dopo nell'esecuzione
 
 # Connect to Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
-#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 Bootstrap(app)
 
@@ -39,10 +39,15 @@ class Cafe(db.Model):
 
 
 # db.create_all()
+
+
+# homepage
 @app.route("/")
 def home():
     return render_template("index.html")
 
+
+# list of cafes in db, with filtering options
 @app.route("/cafes", methods=["GET", "POST"])
 def cafe_list():
     form = FilterForm()
@@ -50,7 +55,7 @@ def cafe_list():
         if form.reset.data:
             return redirect(url_for("cafe_list"))
         # elif form.filter.data:  # not necessary
-            # print(form.data)
+        # print(form.data)
         conditions = []
         if form.name.data != '':
             conditions.append(func.lower(Cafe.name).like(func.lower(f"%{form.name.data}%")))
@@ -71,78 +76,84 @@ def cafe_list():
         # with 'scalars' I can access single elements instead of rows
     return render_template("cafes.html", all_cafes=cafes, filter_form=form)
 
-## TODO: add and remove cafes + users login? + comment/reviews?
 
-# # HTTP GET - Read Record
-# @app.route("/random")
-# def random_get():
-#     query_cafes = Cafe.query.all()
-#     random_cafe = random.choice(query_cafes)
-#     return jsonify(cafe=cafe_to_json(random_cafe))
-#
-#
-# @app.route("/all")
-# def all_get():
-#     query_cafes = Cafe.query.all()
-#     all_cafes = [cafe_to_json(row) for row in query_cafes]
-#     return jsonify(cafes=all_cafes)  # posso trasformare in dict (1 riga di codice) e poi farci il jsonify
-#
-#
-# @app.route("/search")
-# def search_get():
-#     loc = request.args.get('loc')
-#     query_cafes = Cafe.query.filter_by(location=loc).all()
-#     search_cafes = [cafe_to_json(row) for row in query_cafes]
-#     if not search_cafes:
-#         return jsonify(error={"Not Found": "No cafes at that location"})
-#     return jsonify(cafes=search_cafes)
-#
-#
-# # HTTP POST - Create Record
-# @app.post("/add")
-# def add_cafe():
-#     cafe_to_add = Cafe(
-#         name=request.form["name"],
-#         map_url=request.form["map_url"],
-#         img_url=request.form["img_url"],
-#         location=request.form["location"],
-#         seats=request.form["seats"],
-#         has_toilet=bool(request.form["has_toilet"]),
-#         has_wifi=bool(request.form["has_wifi"]),
-#         has_sockets=bool(request.form["has_sockets"]),
-#         can_take_calls=bool(request.form["can_take_calls"]),
-#         coffee_price=request.form["coffee_price"]
-#     )
-#     db.session.add(cafe_to_add)
-#     db.session.commit()
-#     return jsonify(response={"success": "Successfully added the new cafe."})
-#
-#
-# # HTTP PUT/PATCH - Update Record
-# @app.patch("/update-price/<int:cafe_id>")
-# def update_price(cafe_id):
-#     cafe_edit = Cafe.query.get(cafe_id)
-#     if not cafe_edit:
-#         return jsonify(error={"Not Found": "No cafes with the given id"}), 404  # posso aggiungere il codice della risposta
-#     cafe_edit.coffee_price = request.args.get('new_price')
-#     db.session.commit()
-#     return jsonify(response={"success": "Successfully changed the price."}), 200
-#
-#
-# # HTTP DELETE - Delete Record
-# @app.delete("/report-closed/<int:cafe_id>")
-# def delete(cafe_id):
-#     cafe_delete = Cafe.query.get(cafe_id)
-#     if not cafe_delete:
-#         return jsonify(error={"Not Found": "No cafes with the given id"}), 404
-#     api_key = request.args.get('api-key')
-#     if api_key == "TopSecretAPIKey":
-#         db.session.delete(cafe_delete)
-#         db.session.commit()
-#         return jsonify(response={"success": "Successfully deleted from database."}), 200
-#     else:
-#         return jsonify(error="Not allowed: invalid API key"), 403
+## TODO: users login? + comment/reviews?
 
+# Add a new café
+@app.route("/add", methods=["GET", "POST"])
+def add_cafe():
+    new_cafe_form = NewCafeForm()
+    if new_cafe_form.validate_on_submit():
+        cafe_to_add = Cafe(
+            name=new_cafe_form.name.data,
+            map_url=new_cafe_form.map_url.data,
+            img_url=new_cafe_form.img_url.data,
+            location=new_cafe_form.location.data,
+            has_sockets=bool(new_cafe_form.sockets.data),
+            has_toilet=bool(new_cafe_form.toilet.data),
+            has_wifi=bool(new_cafe_form.wifi.data),
+            can_take_calls=bool(new_cafe_form.calls.data),
+            seats=new_cafe_form.seats.data,
+            coffee_price=f"£{'{:.2f}'.format(new_cafe_form.coffee_price.data)}"
+        )
+        if db.session.execute(db.select(Cafe).where(Cafe.name == cafe_to_add.name)).first():
+            flash("We already have this café")
+        else:
+            db.session.add(cafe_to_add)
+            db.session.commit()
+            return redirect(url_for('cafe_list'))
+    # else:
+    #     print("Form validation failed")
+    #     print(form.errors)
+    return render_template("add_cafe.html", form=new_cafe_form)
+
+
+# HTTP PUT/PATCH - Update Record
+@app.route("/update-cafe/<int:cafe_id>", methods=["GET", "POST"])
+def update_cafe(cafe_id):
+    cafe_to_edit = db.session.execute(db.select(Cafe).filter_by(id=cafe_id)).scalar()
+    if not cafe_to_edit:
+        return abort(404, "Invalid café id")  # posso aggiungere il codice della risposta
+    edit_form = NewCafeForm(
+        name=cafe_to_edit.name,
+        map_url=cafe_to_edit.map_url,
+        img_url=cafe_to_edit.img_url,
+        location=cafe_to_edit.location,
+        sockets=cafe_to_edit.has_sockets,
+        toilet=cafe_to_edit.has_toilet,
+        wifi=cafe_to_edit.has_wifi,
+        calls=cafe_to_edit.can_take_calls,
+        seats=cafe_to_edit.seats,
+        coffee_price=float(cafe_to_edit.coffee_price[1:]),
+    )
+    if edit_form.validate_on_submit():
+        print(edit_form.data)
+        cafe_to_edit.name = edit_form.name.data
+        cafe_to_edit.map_url = edit_form.map_url.data
+        cafe_to_edit.img_url = edit_form.img_url.data
+        cafe_to_edit.location = edit_form.location.data
+        cafe_to_edit.has_sockets = bool(edit_form.sockets.data)
+        cafe_to_edit.has_toilet = bool(edit_form.toilet.data)
+        cafe_to_edit.has_wifi = bool(edit_form.wifi.data)
+        cafe_to_edit.can_take_calls = bool(edit_form.calls.data)
+        cafe_to_edit.seats = edit_form.seats.data
+        cafe_to_edit.coffee_price = f"£{'{:.2f}'.format(edit_form.coffee_price.data)}"
+        print(cafe_to_edit)
+
+        db.session.commit()
+        return redirect(url_for('cafe_list'))
+    return render_template('add_cafe.html', form=edit_form)
+
+
+# HTTP DELETE - Delete Record
+@app.route("/delete-cafe/<int:cafe_id>")
+def delete_cafe(cafe_id):
+    cafe_to_delete = db.session.execute(db.select(Cafe).filter_by(id=cafe_id)).scalar()
+    if not cafe_to_delete:
+        return abort(404, "Invalid café id")  # posso aggiungere il codice della risposta
+    db.session.delete(cafe_to_delete)
+    db.session.commit()
+    return redirect(url_for('cafe_list'))
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -34,6 +34,16 @@
                             <div class="col">Wifi: {{ '✔️' if cafe.has_wifi else '❌' }}</div>
                             <div class="col">Calls: {{ '✔️' if cafe.can_take_calls else '❌' }}</div>
                         </div>
+                        <br>
+                         <div class="row">
+                            <div class="col">
+                                    <a class="btn btn-primary" href="{{ url_for('update_cafe', cafe_id=cafe.id) }}">Edit café</a>
+                            </div>
+                            <div class="col">
+                                    <a class="btn btn-danger" href="{{ url_for('delete_cafe', cafe_id=cafe.id) }}">Edit café</a>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <hr class="my-4">
